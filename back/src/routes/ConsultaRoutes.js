@@ -5,13 +5,13 @@ const ConsultaValida = require('../middlewares/ConsultaValida')
 
 //toda vez que chegar uma req do tipo post em /consulta
 //vou chamar o controller para receber o post
-rota.post('/', ConsultaValida, ConsultaController.criar)
+rota.post('/', ConsultaController.criar)
 
 rota.put('/:id', ConsultaValida, ConsultaController.atualizar)
 
 rota.put('/concluida/:id/:termino', ConsultaController.concluida)
 
-rota.get('/listar', ConsultaController.listar)
+rota.get('/tipo', ConsultaController.consultaTipo)
 
 rota.get('/buscar/:id', ConsultaController.buscar)
 
@@ -22,4 +22,10 @@ rota.get('/atrasadas',ConsultaController.atrasadas)
 rota.get('/hoje', ConsultaController.consultaHoje)
 
 rota.get('/semana', ConsultaController.consultaSemana)
+
+rota.get('/mes', ConsultaController.consultaMes)
+
+rota.get('/todas', ConsultaController.consultaTodas)
+
+rota.get('/ano', ConsultaController.consultaAno)
 module.exports = rota

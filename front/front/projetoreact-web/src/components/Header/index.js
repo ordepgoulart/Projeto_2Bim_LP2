@@ -14,7 +14,7 @@ function Header({atrasadas, noticacaoClick}) {
         <Styl.Dir>
         <Link to="/">Início</Link>
         <span className="divisor"/>
-        <Link to="/">Pacientes</Link>
+        <Link to="/pacientes">Pacientes</Link>
         <span className="divisor"/>
         <Link to="/formulario">Nova Consulta</Link>
         <span className="divisor"/>

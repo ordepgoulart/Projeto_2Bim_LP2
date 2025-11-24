@@ -15,6 +15,7 @@ function ConsultaCartao({tipo, paciente, descricao, data}) {
       <Styl.TopoCartao>
         <img src={tipoIcones[tipo]} alt="Icone consulta padrão"/>
         <h1>{paciente}</h1>
+        {console.log(tipoIcones[tipo])}
       </Styl.TopoCartao>
       <Styl.BotaoCartao>
         <strong>{diaMesAno}</strong>

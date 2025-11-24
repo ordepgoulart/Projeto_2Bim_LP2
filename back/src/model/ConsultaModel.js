@@ -14,6 +14,7 @@ const ConsultaSchema = new Schema({
     //2025-10-24T12:21:28.083Z
     data: {type: Date, required: true},
     termino: {type: Boolean, default: false},
+    retorno: {type: String, required: false},
     criada: {type: Date, default: Date.now()}
 })
 

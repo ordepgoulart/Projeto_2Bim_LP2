@@ -4,7 +4,7 @@ const ConsultaModel = require('../model/ConsultaModel')
 const hoje = new Date()
 
 //recuperar começo e fim do dia
-const  {startOfDay, endOfDay, startOfWeek, endOfWeek} = require('date-fns')
+const  {startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, endOfYear, startOfYear} = require('date-fns')
 
 class ConsultaController{
     //função para criar a consulta
@@ -45,7 +45,7 @@ class ConsultaController{
             })
     }
 
-    static async listar(req, resp){
+    static async consultaTipo(req, resp){
         //listar consultas
         //por tipo
         //operador in para procurar entre os dados existentes quais 
@@ -148,6 +148,61 @@ class ConsultaController{
     }
 
 
+    static async consultaMes(req, resp){
+
+        await ConsultaModel.find(
+            //operador gte --> maior igual que
+            //operador lte --> menor igual que
+            {'data': {'$gte':startOfMonth(hoje), '$lte': endOfMonth(hoje)}})
+            .sort('data')
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+            })
+    }
+
+    static async consultaAno(req, resp){
+
+        await ConsultaModel.find(
+            //operador gte --> maior igual que
+            //operador lte --> menor igual que
+            {'data': {'$gte':startOfYear(hoje), '$lte': endOfYear(hoje)}})
+            .sort('data')
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+            })
+    }
+    
+    static async consultaTodas(req, resp){
+
+        await ConsultaModel.find()
+            .sort('data')
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+            }
+        )
+    }
+
+//perigosooo
+    static async consultaTipo(req, resp){
+
+        await ConsultaModel.find()
+            .sort('tipo')
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+            })
+    }
 
 }
 //expostar a minha classe

@@ -6,7 +6,7 @@ import Footer from '../../components/Footer';
 import FiltrarConsulta from '../../components/ConsultaFiltrar';
 import ConsultaCartao from '../../components/ConsultaCartao';
 import api from '../../services/api'
-
+import { Link } from 'react-router-dom';
 
 function Home() {
   
@@ -81,16 +81,16 @@ useEffect(()=>{
         </Styl.Titulo>
         <Styl.Cartao>
           {
-            consulta.map(x=>{
-              <Link to={`/formulario/${x._id}`}>
+            consulta.map(c=>(
+              <Link to={`/formulario/${c._id}`}>
                 <ConsultaCartao
-                tipo={x.tipo}
-                paciente={x.paciente}
-                descricao={x.descricao}
-                data={x.data}
+                tipo={c.tipo}
+                paciente={c.paciente}
+                descricao={c.descricao}
+                data={c.data}
                 />
               </Link>
-            })
+            ))
           }
         </Styl.Cartao>
 

@@ -5,11 +5,11 @@ import Footer from '../../components/Footer';
 import api from '../../services/api'
 import tipoIcones from '../../utils/tipoIcones'
 import { useParams } from 'react-router-dom';
+import { format } from 'date-fns';
 
 function ConsultaDetalhes() {
     const [atrasadas, atualizaAtrasadas] = useState()
     const [tipo , atualizarTipo] = useState()
-
     //Criar estados para armazenar os dados da consulta que vem do banco
     const [id, setId] = useState()
     const [concluida, setConcluida] = useState(false)
@@ -20,38 +20,83 @@ function ConsultaDetalhes() {
 
     const {idC} = useParams()
     async function carregarConsulta() {
-        await api.get(`/consulta/buscar/${idC}`)
-        .then(resp=>{
-            atualizarTipo(resp.data.tipo)
-            setPaciente(resp.data.paciente)
-            setDescricao(resp.data.descricao)
-            setDay(format(new Date(resp.data.data), 'yyyy-MM-dd'))
-            setHour(format(new Date(resp.data.data), 'HH:mm'))
-        })
-    }
+        if(!idC){
+            await api.get(`/consulta/buscar/${idC}`)
+            .then(resp=>{
+                atualizarTipo(resp.data.tipo)
+                setPaciente(resp.data.paciente)
+                setDescricao(resp.data.descricao)
+                setDay(format(new Date(resp.data.data), 'yyyy-MM-dd'))
+                setHour(format(new Date(resp.data.data), 'HH:mm'))
+            })
+            await api.get(`/paciente/${paciente}`)
+            .then(resp=>{
+                setPaciente(resp.data.cpf)
+            })
+        }
+    }        
 
     async function verificaAtrasadas() {
-    await api.get('/consulta/atrasadas')
-    .then(resp=>
-        atualizaAtrasadas(resp.data.length)
-    )
+        await api.get('/consulta/atrasadas')
+        .then(resp=>
+            atualizaAtrasadas(resp.data.length)
+        )
     }
 
     useEffect(()=>{
-        carregarConsulta();
+        
+        if(idC != undefined)
+            carregarConsulta();
         verificaAtrasadas()
     }, [])
 
     async function salvar() {
-        await api.post('/consulta',{
-            tipo,
-            paciente,
-            descricao,
-            data: `${dia}T${hora}:00.000`
+        await api.get(`/paciente/cpf/${paciente}`)
+        .then(async resp=>{
+            if(resp.data.length===0){
+                setPaciente(resp.data[0]._id)
+                await api.post('/consulta',{
+                    tipo,
+                    paciente,
+                    descricao,
+                    data: `${dia}T${hora}:00.000`,
+                    concluida
+                })
+                .then(()=>{
+                    alert("Consulta cadastrada!")
+                })
+                .catch(()=>{
+                    alert("Erro ao cadastrar a consulta!")
+                })
+            } else {
+                alert("Paciente não cadastrado!")
+            }
         })
-        .then(()=>{
-            alet("Consulta cadastrada!")
+        .catch(()=>{
+            alert("Erro ao recuperar o paciente!")
         })
+    }
+
+    async function atualizar() {
+        await api.get(`/paciente/cpf/${paciente}`)
+        .then(async resp=>{
+            if(resp.data.length===0){
+                setPaciente(resp.data[0]._id)
+                 await api.put(`/consulta/${idC}`,{
+                    tipo,
+                    paciente,
+                    descricao,
+                    data: `${dia}T${hora}:00.000`,
+                    concluida
+                })
+                .then(()=>{
+                    alert("Consulta atualizada!")
+                })
+            } else {
+                alert("Paciente não cadastrado!")
+            }
+        })
+       
     }
 
     return  (
@@ -72,8 +117,8 @@ function ConsultaDetalhes() {
                     </Styl.TipoIcones>
 
                     <Styl.Input>
-                        <span>Paciente</span>    
-                        <input type='text' placeholder='Nome do paciente' onChange={e=>setPaciente(e.target.value)} value={paciente}/>
+                        <span>CPF doPaciente</span>    
+                        <input type='text' placeholder='CPF do paciente' onChange={e=>setPaciente(e.target.value)} value={paciente}/>
                     </Styl.Input>
                     
                     <Styl.TextArea>
@@ -94,13 +139,21 @@ function ConsultaDetalhes() {
                     <Styl.Opcao>
                         <div>
                             <input type='checkbox' onChange={e=>setConcluida(e.target.value)} value={!concluida}/>
-                            <span>CONCLUÍDA</span>
+                            <span>Concluída</span>
                         </div>
-                        <button type='button'>EXCLUIR</button>
+                        {
+                            idC == undefined ? null :
+                            <button type='button'>Excluir</button>
+                        }
+                        
                     </Styl.Opcao>
 
-                    <Styl.Salvar>
-                        <button type='button' onClick={salvar()}>SALVAR</button>
+                    <Styl.Salvar>   
+                        { idC == undefined ?
+                            <button type='button' onClick={() => salvar()}>Salvar</button> 
+                            ://Mandei no grupo o disc
+                            <button type='button' onClick={() => atualizar()}>Atualizar</button>
+                        }
                     </Styl.Salvar>
 
                 </Styl.Formulario>
