@@ -15,25 +15,31 @@ function ConsultaDetalhes() {
     const [concluida, setConcluida] = useState(false)
     const [paciente, setPaciente] = useState()
     const [descricao, setDescricao] = useState()
+    const [retorno, setRetorno] = useState()
     const [dia, setDay] = useState()
     const [hora, setHour] = useState()
-
+    const [tipoVindo, setTipoVindo] = useState()
     const {idC} = useParams()
     async function carregarConsulta() {
-        if(!idC){
+        if(idC != undefined){
             await api.get(`/consulta/buscar/${idC}`)
-            .then(resp=>{
+            .then(async resp=>{
                 atualizarTipo(resp.data.tipo)
-                setPaciente(resp.data.paciente)
+                setTipoVindo(resp.data.tipo)
                 setDescricao(resp.data.descricao)
                 setDay(format(new Date(resp.data.data), 'yyyy-MM-dd'))
                 setHour(format(new Date(resp.data.data), 'HH:mm'))
+                setPaciente(resp.data.paciente)
+                setConcluida(resp.data.concluida)
+                setRetorno(resp.data.retorno)
             })
-            await api.get(`/paciente/${paciente}`)
+            await paciente != undefined &&
+            api.get(`/paciente/buscar/${paciente}`)
             .then(resp=>{
                 setPaciente(resp.data.cpf)
             })
         }
+            
     }        
 
     async function verificaAtrasadas() {
@@ -44,29 +50,45 @@ function ConsultaDetalhes() {
     }
 
     useEffect(()=>{
-        
         if(idC != undefined)
             carregarConsulta();
+        console.log(idC)
         verificaAtrasadas()
     }, [])
 
     async function salvar() {
         await api.get(`/paciente/cpf/${paciente}`)
         .then(async resp=>{
-            if(resp.data.length===0){
+            console.log(resp.data)
+            
+            if(resp.data.length!=0){
                 setPaciente(resp.data[0]._id)
+                if(tipo == 2){
+                    await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
+                    .then(async resp=>{
+                        if(resp.data.length>0){
+                            setRetorno(resp.data[0]._id);
+                        }
+                    })
+                }
+                else {
+                    setRetorno("");
+                }
                 await api.post('/consulta',{
                     tipo,
                     paciente,
                     descricao,
                     data: `${dia}T${hora}:00.000`,
-                    concluida
+                    concluida,
+                    retorno
                 })
                 .then(()=>{
                     alert("Consulta cadastrada!")
+                    window.location.href = '/'
                 })
                 .catch(()=>{
                     alert("Erro ao cadastrar a consulta!")
+                    setPaciente(resp.data[0].cpf)
                 })
             } else {
                 alert("Paciente não cadastrado!")
@@ -77,25 +99,72 @@ function ConsultaDetalhes() {
         })
     }
 
-    async function atualizar() {
-        await api.get(`/paciente/cpf/${paciente}`)
-        .then(async resp=>{
-            if(resp.data.length===0){
-                setPaciente(resp.data[0]._id)
-                 await api.put(`/consulta/${idC}`,{
-                    tipo,
-                    paciente,
-                    descricao,
-                    data: `${dia}T${hora}:00.000`,
-                    concluida
+    async function excluir() {
+        let confirmar = window.confirm("Deseja realmente excluir a consulta?");
+        if(confirmar){
+            if(tipo != 2){
+                await api.get(`/consulta/possuiretorno/${idC}`)
+                .then(async resp=>{
+                    if(resp.data.length>0){
+                        alert("Não é possível excluir uma consulta que possui retorno agendado!")
+                    }
                 })
-                .then(()=>{
-                    alert("Consulta atualizada!")
-                })
-            } else {
-                alert("Paciente não cadastrado!")
             }
-        })
+            else {
+                await api.get(`/consulta/deletar/${idC}`)
+                .then(async()=>{
+                    alert("Consulta excluída com sucesso!")
+                })
+                .catch(()=>{
+                    alert("Erro ao excluir a consulta!")
+                })
+            }
+            
+                
+            
+        }
+       
+    }
+
+
+    async function atualizar() {
+        if(tipoVindo == 2 && tipo !=2){
+           alert("Não é possível alterar o tipo de uma consulta de retorno para outro tipo!");
+        }
+        else{
+            await api.get(`/paciente/cpf/${paciente}`)
+            .then(async resp=>{
+                if(resp.data.length>0){
+                    setPaciente(resp.data[0]._id)
+                    if(tipo == 2){
+                    await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
+                    .then(async resp=>{
+                        if(resp.data.length>0){
+                            setRetorno(resp.data[0]._id);
+                        }
+                    })
+                    }
+                    else {
+                        setRetorno("");
+                    }
+                    await api.put(`/consulta/${idC}`,{
+                        tipo,
+                        paciente,
+                        descricao,
+                        data: `${dia}T${hora}:00.000`,
+                        concluida,
+                        retorno
+                    })
+                    .then(()=>{
+                        alert("Consulta atualizada!")
+                        window.location.href = '/'
+                    })
+                } else {
+                    alert("Paciente não cadastrado!")
+                }
+            })
+        }
+        
        
     }
 
@@ -143,7 +212,7 @@ function ConsultaDetalhes() {
                         </div>
                         {
                             idC == undefined ? null :
-                            <button type='button'>Excluir</button>
+                            <button type='button' onClick={() => excluir()}>Excluir</button>
                         }
                         
                     </Styl.Opcao>

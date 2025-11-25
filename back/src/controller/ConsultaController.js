@@ -4,7 +4,7 @@ const ConsultaModel = require('../model/ConsultaModel')
 const hoje = new Date()
 
 //recuperar começo e fim do dia
-const  {startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, endOfYear, startOfYear} = require('date-fns')
+const  {startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, endOfYear, startOfYear, subDays} = require('date-fns')
 
 class ConsultaController{
     //função para criar a consulta
@@ -132,6 +132,19 @@ class ConsultaController{
             })
     }
 
+    static async possuiRetorno(req, resp){
+        await ConsultaModel.find(
+            {'tipo': 2,
+             'retorno': req.params.id}
+        )
+        .then(resposta=>{
+            return resp.status(200).json(resposta)
+        })
+        .catch(erro=>{
+            return resp.status(500).json(erro)
+        })
+    }
+
     static async consultaSemana(req, resp){
 
         await ConsultaModel.find(
@@ -201,7 +214,18 @@ class ConsultaController{
             })
             .catch(erro=>{
                 return resp.status(500).json(erro)
+        })
+    }
+
+    static async marcarRetorno(req, resp){
+        await ConsultaModel.find({'date':{'$gte': subDays(req.params.data,30), '$lt': req.params.data}, 'concluida': true, 'paciente': req.params.paciente})
+            .sort('data')
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
             })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+        })
     }
 
 }

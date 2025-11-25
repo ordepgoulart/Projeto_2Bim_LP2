@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const Container = styled.div`
     width: 250px;
-    height: 200px;
+    height: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -35,6 +35,7 @@ export const BotaoCartao = styled.div`
     width:100%;    
     display:flex;
     justify-content:space-around;
+    
     strong{
         color: #22B14C; 
         font-weight:bold;

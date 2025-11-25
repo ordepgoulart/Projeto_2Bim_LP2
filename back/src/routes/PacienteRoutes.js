@@ -26,4 +26,6 @@ rota.get('/particular', PacienteController.consultarParticular)
 rota.get('/masculino', PacienteController.consultarMasculino)
 
 rota.get('/feminino', PacienteController.consultarFeminino)
+
+
 module.exports = rota
