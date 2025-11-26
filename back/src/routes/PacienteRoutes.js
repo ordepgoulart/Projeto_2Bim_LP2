@@ -19,6 +19,8 @@ rota.get('/buscar/:id', PacienteController.buscar)
 
 rota.delete('/deletar/:id', PacienteController.deletar)
 
+rota.get('/pesquisa/:cpf', PacienteController.cpfParcial)
+
 rota.get('/planosaude', PacienteController.consultarPlanoSaude)
 
 rota.get('/particular', PacienteController.consultarParticular)

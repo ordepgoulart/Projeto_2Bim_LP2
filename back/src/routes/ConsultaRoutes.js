@@ -11,7 +11,9 @@ rota.put('/:id', ConsultaValida, ConsultaController.atualizar)
 
 rota.put('/concluida/:id/:termino', ConsultaController.concluida)
 
-rota.get('/tipo', ConsultaController.consultaTipo)
+rota.get('/tipo/:tipo', ConsultaController.consultaTipo)
+
+rota.get('/buscarPACIENTE/:id', ConsultaController.buscarPaciente)
 
 rota.get('/buscar/:id', ConsultaController.buscar)
 

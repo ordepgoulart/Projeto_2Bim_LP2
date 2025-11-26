@@ -22,30 +22,56 @@ const ConsultaValida = async (req, resp, next) =>{
             return resp.status(400).json({erro: 'Escolha uma data e hora futura'})
     
         else{
-            //criar variavel para iniciar como varia
             let existe
-            
-            //validar se na data atualizada ja existente uma consulta criada
-            if(req.params.id){
-                existe = await ConsultaModel
-                                .findOne(
-                                    //operador de igualdade --> $eq
-                                    {'data':{'$eq': new Date(data)},
-                                    //operador não existe --> $ne 
-                                    '_id':{'$ne':req.params.id}   
-                                }
-                                )
+            if(tipo == 3){
+                if(req.params.id){
+                    existe = await ConsultaModel
+                    .findOne(
+                        //operador de igualdade --> $eq
+                        {'data':{'$eq': new Date(data)},
+                        //operador não existe --> $ne 
+                        '_id':{'$ne':req.params.id}, 'tipo': {"$eq":tipo}   
+                    }
+                    )
+                }
+                else
+                {
+                    existe = await ConsultaModel.findOne({'data': {$eq: new Date(data)}, 'tipo' : Number(tipo), 'paciente' : paciente})
+                    if(existe)
+                        return resp.status(400).json({erro: 'Já existe consulta nesse dia e horário para esse paciente'})
+                    existe = await ConsultaModel.findOne({'data': {'$gte': new Date(data)}})
+                    if(existe){
+                        await ConsultaModel.updateMany({'data' : {'$gte' : new Date(data)}},[{"$set" : {'data' : {'$add' : ['$data', 3600000]}}}])
+                        console.log("To aqui")
+                    }
+                    else {
+                        console.log("To fora")
+                    }
+                }
+            }
+            else {
+                //validar se na data atualizada ja existente uma consulta criada
+                if(req.params.id){
+                    existe = await ConsultaModel
+                    .findOne(
+                        //operador de igualdade --> $eq
+                        {'data':{'$eq': new Date(data)},
+                        //operador não existe --> $ne 
+                        '_id':{'$ne':req.params.id}   
+                    }
+                    )
 
-            }else{
+                }
+                else{
                     //buscar na colection a consulta pelo mesma data e hora
                     //vou usar o campo data para verificar 
                     //operacor de igual utilizado para validação no banco é: $eq
                     existe = await ConsultaModel.findOne({'data': {$eq: new Date(data)}})
-            }           
-            if(existe)
-                return resp.status(400).json({erro: 'Já existe consulta nesse dia e horário'})
-
-
+                }           
+                if(existe)
+                    return resp.status(400).json({erro: 'Já existe consulta nesse dia e horário'})
+            }
+            //criar variavel para iniciar como varia
             next()
         }
 }

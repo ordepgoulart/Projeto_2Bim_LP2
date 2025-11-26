@@ -2,6 +2,7 @@
 import React from 'react';
 import * as Styl from './styles'
 import filtro from '../../assets/filtro.png'
+import tipoIcones from '../../utils/tipoIcones';
 
 function FiltrarConsulta({titulo, ativo}) {
   return (

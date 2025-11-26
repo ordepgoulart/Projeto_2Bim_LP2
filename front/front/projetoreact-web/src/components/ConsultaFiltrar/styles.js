@@ -2,12 +2,13 @@ import styled from 'styled-components'
 
 export const Container = styled.div`
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 150px;
-    height: 60px;
+    width: 270px;
+    height: 90px;
     background: ${prop=> prop.ativo=="true"  ? '#22B24C' : '#C0C0C0'}; 
     display: flex;
     border-radius: 5px;
     padding: 10px;
+    margin-bottom: 0.4rem;
 
     flex-direction: column;
     justify-content: space-around;

@@ -17,7 +17,6 @@ function ConsultaCartao({tipo, paciente, descricao, data}) {
     .then(resp=> {
       const re = resp.data.nome
       setPacienteNome(re)
-      console.log(resp.data)
     });
   }
 
@@ -30,7 +29,6 @@ function ConsultaCartao({tipo, paciente, descricao, data}) {
       <Styl.TopoCartao>
         <img src={tipoIcones[tipo]} alt="Icone consulta"/>
         <h1>{pacienteNome != undefined ? pacienteNome : paciente}</h1>
-        {console.log(tipoIcones[tipo])}
       </Styl.TopoCartao>
       <Styl.BotaoCartao>
         <strong>{diaMesAno}</strong>

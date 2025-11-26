@@ -16,7 +16,8 @@ const PacienteValido = async (req, resp, next) =>{
         const cidade = req.body.cidade
         const estado = req.body.estado
         const regexCPF = new RegExp("^\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}$");
-        const regexTel = new RegExp("^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$")
+        const regexCEP = new RegExp("^\\d{5}\\-?\\d{3}$");
+        const regexTel = new RegExp("^\\(\\d{2}\\)\\s\\d{4,5}-\\d{4}$");
         
         if(nome == null || nome==undefined)
             return resp.status(400).json({erro: 'O nome é obrigatório'})
@@ -35,9 +36,11 @@ const PacienteValido = async (req, resp, next) =>{
         else if(cep==null || cep == undefined)
             return resp.status(400).json({erro: 'O CEP é obrigatório'})
         else if(!regexTel.test(telefone))
-            return resp.status(400).json({erro: 'O formato de telefone é inválido (00) 00000-0000'})
+            return resp.status(400).json({erro: 'O formato de telefone é inválido ((00) 00000-0000)'})
         else if(!regexCPF.test(cpf))
             return resp.status(400).json({erro: 'O formato do CPF é inválido (000.000.000-00)'})
+        else if(!regexCEP.test(cep))
+            return resp.status(400).json({erro: 'O formato do CEP é inválido (00000-000)'})
         else{
             //criar variavel para iniciar como varia
             let existe

@@ -241,7 +241,7 @@ function ConsultaDetalhes() {
                                 window.location.href = '/'
                             })
                             .catch((e)=>{
-                                console.log(e.response.data.erro)
+                                alert(e.response.data.erro)
                                 setPaciente(resp.data[0].cpf)
                             })
                             

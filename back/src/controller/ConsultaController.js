@@ -24,6 +24,18 @@ class ConsultaController{
             })
     }
 
+    static async buscarPaciente(req,resp){
+        await ConsultaModel.find({'paciente': req.params.id})
+            //organizar as consultas por cpf
+            .sort('data')
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+            })
+    }
+
     static async atualizar(req, resp){
 
         //resgatar os dados da consulta pelo id (findbyid)
@@ -51,7 +63,7 @@ class ConsultaController{
         //operador in para procurar entre os dados existentes quais 
         // consultas são do tipo passado por parametro
         await ConsultaModel.find(
-            {'tipo': {'$in':req.body.tipo}}
+            {'tipo': {'$eq':Number(req.params.tipo)}}
             )
             //organizar as consultas por data crescente
             .sort('data')
@@ -155,7 +167,7 @@ class ConsultaController{
             return resp.status(500).json(erro)
         })
     }
-
+    
     static async consultaSemana(req, resp){
 
         await ConsultaModel.find(
@@ -213,19 +225,6 @@ class ConsultaController{
                 return resp.status(500).json(erro)
             }
         )
-    }
-
-//perigoso
-    static async consultaTipo(req, resp){
-
-        await ConsultaModel.find()
-            .sort('tipo')
-            .then(resposta =>{
-                return resp.status(200).json(resposta)
-            })
-            .catch(erro=>{
-                return resp.status(500).json(erro)
-        })
     }
 
     static async verificarCirugia(req, resp){

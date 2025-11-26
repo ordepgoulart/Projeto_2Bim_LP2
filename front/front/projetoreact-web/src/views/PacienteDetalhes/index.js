@@ -102,8 +102,8 @@ function PacienteDetalhes() {
             alert("Paciente atualizado!")
             window.location.href = '/pacientes'
         })
-        .catch(()=>{
-            alert("Erro ao atualizar paciente!")
+        .catch((e)=>{
+            alert(e.response.data.erro)
         })
        
     }

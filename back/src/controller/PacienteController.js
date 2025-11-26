@@ -164,6 +164,16 @@ class PacienteController{
             })
     }
 
+    static async cpfParcial(req, resp){
+        await PacienteModel.find({'cpf': { $regex : req.params.cpf } })
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+            })
+    }
+
     static async consultarTodos(req, resp){
         await PacienteModel.find()
             .sort('cpf')

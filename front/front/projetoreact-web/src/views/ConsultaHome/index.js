@@ -7,6 +7,7 @@ import FiltrarConsulta from '../../components/ConsultaFiltrar';
 import ConsultaCartao from '../../components/ConsultaCartao';
 import api from '../../services/api'
 import { Link } from 'react-router-dom';
+import tipoIcones from '../../utils/tipoIcones';
 
 function Home() {
   
@@ -35,13 +36,51 @@ const [filtroConsulta, atualizarFiltroAtivo] = useState('hoje')
 
 //o useState irá guardar uma coleção de informações [] --> dados do banco
 const [consulta, atualizaConsulta] = useState([])
+const [tipo, atualizarTipo] = useState()
+const [parse, setParse] = useState()
 
 async function carregarConsulta() {
-  await api.get(`/consulta/${filtroConsulta}`)
-  .then(response=>{
-    atualizaConsulta(response.data)
-    console.log(response.data)
-  })
+  if(filtroConsulta != "nenhum"){
+    if(filtroConsulta != "pesquisa"){
+      atualizarTipo(0);
+      await api.get(`/consulta/${filtroConsulta}`)
+      .then(response=>{
+        atualizaConsulta(response.data)
+      })
+    }
+    else
+    {
+      if(parse !== undefined){
+        await api.get(`/paciente/${filtroConsulta}/${parse}`)
+        .then(async (response)=>{
+          if(response.data.length > 0){
+            const id = response.data[0]._id
+            await api.get(`/consulta/buscarPACIENTE/${id}`)
+            .then((response2)=>{
+              atualizaConsulta(response2.data)
+            })
+          }
+          else {
+            alert("Não há nenhum CPF cadastrado com esse formato")
+            atualizarFiltroAtivo("todas"); 
+            setParse("");
+          }
+        })
+        .catch(()=>{
+          alert("Não há nenhum CPF cadastrado com esse formato")
+          atualizarFiltroAtivo("todas"); 
+          setParse("");
+        })
+      }
+    }
+  }
+  else{
+    setParse("");
+    await api.get(`/consulta/tipo/${tipo}`)
+    .then(response=>{
+      atualizaConsulta(response.data)
+    })
+  }
 }
 
 function notificacao(){
@@ -52,40 +91,46 @@ function notificacao(){
 useEffect(()=>{
   carregarConsulta()
   verificaAtrasadas()
-}, [filtroConsulta])
+}, [filtroConsulta, tipo])
 
 
-  return  (
+return  (
     <Styl.Container>
       <Header atrasadas = {atrasadas} noticacaoClick={notificacao}/>
+        <Styl.Pesquisa>
+          <div class="box">
+              <input type="text" class="input" value={parse} placeholder="CPF do paciente (000.000.000-00)" onChange={(e)=>{setParse(e.target.value)}}/>
+              <button type="submit" class="button" onClick={()=>atualizarFiltroAtivo("pesquisa")}>Buscar</button>
+          </div>
+        </Styl.Pesquisa>
         <Styl.AreaFiltro>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("todas")}>
+          <button type='button' onClick={()=>{atualizarFiltroAtivo("todas"); setParse("");}}>
               <FiltrarConsulta titulo="Todas" ativo={filtroConsulta=="todas"}/>
           </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("hoje")}>
+          <button type='button' onClick={()=>{atualizarFiltroAtivo("hoje"); setParse("");}}>
               <FiltrarConsulta titulo="Hoje" ativo={filtroConsulta=="hoje"}/>
           </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("semana")}>
+          <button type='button' onClick={()=>{atualizarFiltroAtivo("semana"); setParse("");}}>
               <FiltrarConsulta titulo="Semana" ativo={filtroConsulta=="semana"}/>
           </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("mes")}>
+          <button type='button' onClick={()=>{atualizarFiltroAtivo("mes"); setParse("");}}>
               <FiltrarConsulta titulo="Mês" ativo={filtroConsulta=="mes"}/>
           </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
+          <button type='button' onClick={()=>{atualizarFiltroAtivo("ano"); setParse("");}}>
               <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
           </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
-              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
-          </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
-              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
-          </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
-              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
-          </button>
-          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
-              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
-          </button>
+          <Styl.TipoIcones>
+            {   
+                tipoIcones.map((icone, index)=>(
+                        index>0&&
+                        <button type='button' onClick={()=>{atualizarTipo(index); atualizarFiltroAtivo("nenhum");}}>
+                            <img src={icone} alt='Tipo consulta'
+                            className={tipo && tipo != index && 'inativa'}/>
+                        </button>
+                            
+                ))
+            }
+          </Styl.TipoIcones>
         </Styl.AreaFiltro>
 
         <Styl.Titulo>
