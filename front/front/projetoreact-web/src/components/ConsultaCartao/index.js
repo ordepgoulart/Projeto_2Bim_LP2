@@ -13,17 +13,17 @@ function ConsultaCartao({tipo, paciente, descricao, data}) {
   const [pacienteNome, setPacienteNome] = useState();
 
   async function carregarNome() {
-    await api.get(`/paciente/cpf/${paciente}`)
+    await api.get(`/paciente/buscar/${paciente}`)
     .then(resp=> {
-      if(resp.data.length > 0)  
-        setPacienteNome(resp.data[0].nome)
+      const re = resp.data.nome
+      setPacienteNome(re)
       console.log(resp.data)
     });
   }
 
   useEffect(()=>{
     carregarNome();
-  }, []);
+  }, [paciente]);
 
   return (
     <Styl.Container >

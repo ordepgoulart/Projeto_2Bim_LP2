@@ -20,6 +20,7 @@ const ConsultaValida = async (req, resp, next) =>{
             return resp.status(400).json({erro: 'A data é obrigatório'})
         else if(isPast(new Date(data)))
             return resp.status(400).json({erro: 'Escolha uma data e hora futura'})
+    
         else{
             //criar variavel para iniciar como varia
             let existe

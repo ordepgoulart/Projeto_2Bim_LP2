@@ -23,10 +23,10 @@ function PacienteDetalhes() {
     const [telefone, setTelefone] = useState()
     const [dataNasc, setDataNasc] = useState()
 
-    const {idC} = useParams()
+    const {idP} = useParams()
     async function carregarPaciente() {
-        if(!idC){
-            await api.get(`/paciente/buscar/${idC}`)
+        if(idP != undefined){
+            await api.get(`/paciente/buscar/${idP}`)
             .then(resp=>{
                 setNome(resp.data.nome)
                 setVinculo(resp.data.vinculo)
@@ -40,6 +40,7 @@ function PacienteDetalhes() {
                 setTelefone(resp.data.telefone)
                 setDataNasc(format(new Date(resp.data.dataNasc), 'yyyy-MM-dd'))
             })
+            
         }
     }        
 
@@ -51,9 +52,15 @@ function PacienteDetalhes() {
     }
 
     useEffect(()=>{
-        if(idC != undefined)
+        if(idP != undefined)
             carregarPaciente();
+        else{
+            setVinculo(1);
+            setSexo("Masculino")
+        }
         verificaAtrasadas()
+        
+        
     }, [])
 
     async function salvar() {
@@ -61,7 +68,7 @@ function PacienteDetalhes() {
             nome,
             vinculo,
             prontuario,
-            dataNasc: `${dataNasc}T00:00:00.000`,
+            dataNasc: dataNasc!=undefined ? `${dataNasc}T00:00:00.000` : null,
             telefone,
             cep,
             endereco,
@@ -72,15 +79,17 @@ function PacienteDetalhes() {
         })
         .then(()=>{
             alert("Paciente cadastrado!")
+            window.location.href='/pacientes'
         })
+        .catch(e=>{window.alert(e.response.data.erro)})
     }
 
     async function atualizar() {
-         await api.put(`/paciente/${idC}`,{
+         await api.put(`/paciente/${idP}`,{
             nome,
             vinculo,
             prontuario,
-            dataNasc: `${dataNasc}T00:00:00.000`,
+            dataNasc: dataNasc != undefined ? `${dataNasc}T00:00:00.000` : null,
             telefone,
             cep,
             endereco,
@@ -91,6 +100,7 @@ function PacienteDetalhes() {
         })
         .then(()=>{
             alert("Paciente atualizado!")
+            window.location.href = '/pacientes'
         })
         .catch(()=>{
             alert("Erro ao atualizar paciente!")
@@ -98,31 +108,44 @@ function PacienteDetalhes() {
        
     }
 
+    async function excluir() {
+        let confirmar = window.confirm("Deseja realmente excluir o paciente?");
+        if(confirmar){
+            await api.delete(`/consulta/deletarPorPaciente/${idP}`)
+            .then(async()=>{
+                await api.delete(`/paciente/deletar/${idP}`)
+                .then(()=>{
+                    alert("Paciente excluído com sucesso!")
+                    window.location.href = '/pacientes'
+                })
+                .catch(()=>{
+                    alert("Erro ao excluir o paciente!")
+                })
+            })
+            .catch((e)=>{
+                alert(e.response.data.erro)
+            })
+            
+        }
+       
+    }
+
     return  (
         <Styl.Container>
             <Header atrasadas = {atrasadas} />
                 <Styl.Formulario>
-
-                    <Styl.TipoIcones>
-                        {   
-                            tipoIcones.map((icone, index)=>(
-                                   index>0&&
-                                    <button type='button' onClick={()=>setVinculo(index)}>
-                                        <img src={icone} alt='Tipo Vínculo'
-                                        className={vinculo && vinculo != index && 'inativa'}/>
-                                    </button>
-                                        
-                            ))
-                        }
-                    </Styl.TipoIcones>
-
                     <Styl.Input>
-                        <span>CPF doPaciente</span>    
+                        <span>CPF do Paciente</span>    
                         <input type='text' placeholder='CPF do paciente' onChange={e=>setCpf(e.target.value)} value={cpf}/>
                     </Styl.Input>
                     
+                    <Styl.Input>
+                        <span>Nome do Paciente</span>    
+                        <input type='text' placeholder='Nome do paciente' onChange={e=>setNome(e.target.value)} value={nome}/>
+                    </Styl.Input>
+
                     <Styl.TextArea>
-                        <span>prontuario</span>    
+                        <span>Prontuário</span>    
                         <textarea rows={5} placeholder='Prontuario do paciente' onChange={e=>setProntuario(e.target.value)} value={prontuario}/>
                     </Styl.TextArea>
 
@@ -141,10 +164,82 @@ function PacienteDetalhes() {
                         <input type='text' placeholder='Fone do paciente' onChange={e=>setTelefone(e.target.value)} value={telefone}/>
                     </Styl.Input>
 
+                    <Styl.Input>
+                        <span>Endereço</span>    
+                        <input type='text' placeholder='Endereço do Paciente' onChange={e=>setEndereco(e.target.value)} value={endereco}/>
+                    </Styl.Input>
+
+                    <Styl.Input>
+                        <div className='InputsAndSelect'>
+                            <div className='spanInLine'>
+                                <span>Cidade</span> 
+                                <span className='toLeft'>UF</span> 
+                            </div>
+                            <div className='InputSelect'>
+                                <input type='text' placeholder='Cidade do paciente' onChange={e=>setCidade(e.target.value)} value={cidade}/>
+                                <select className='EstadoSelect' value={estado} onChange={e=>{setEstado(e.target.value)}}>
+                                    <option value="" disabled>Selecione um estado</option>
+                                    <option value="AC">Acre</option>
+                                    <option value="AL">Alagoas</option>
+                                    <option value="AP">Amapá</option>
+                                    <option value="AM">Amazonas</option>
+                                    <option value="BA">Bahia</option>
+                                    <option value="CE">Ceará</option>
+                                    <option value="DF">Distrito Federal</option>
+                                    <option value="ES">Espírito Santo</option>
+                                    <option value="GO">Goiás</option>
+                                    <option value="MA">Maranhão</option>
+                                    <option value="MT">Mato Grosso</option>
+                                    <option value="MS">Mato Grosso do Sul</option>
+                                    <option value="MG">Minas Gerais</option>
+                                    <option value="PA">Pará</option>
+                                    <option value="PB">Paraíba</option>
+                                    <option value="PR">Paraná</option>
+                                    <option value="PE">Pernambuco</option>
+                                    <option value="PI">Piauí</option>
+                                    <option value="RJ">Rio de Janeiro</option>
+                                    <option value="RN">Rio Grande do Norte</option>
+                                    <option value="RS">Rio Grande do Sul</option>
+                                    <option value="RO">Rondônia</option>
+                                    <option value="RR">Roraima</option>
+                                    <option value="SC">Santa Catarina</option>
+                                    <option value="SP">São Paulo</option>
+                                    <option value="SE">Sergipe</option>
+                                    <option value="TO">Tocantins</option>
+                                </select>
+                            </div>
+                        </div>
+                    </Styl.Input>    
+                    <Styl.Input>
+                        <div className='InputsAndSelect'>
+                            <div className='spanInLine'>
+                                <span>Definir Vínculo</span> 
+                                <span className='toMoreLeft'>Sexo</span> 
+                            </div>
+                            <div className='InputSelect'>
+                                <select className='forSelectVinculo' value={vinculo} onChange={e=>{setVinculo(e.target.value)}}>
+                                    <option value="1">Plano de Saúde</option>
+                                    <option value="2">Particular</option>
+                                </select>
+                                <select className='forSelectSexo' value={sexo} onChange={e=>{setSexo(e.target.value)}}>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Feminino">Feminino</option>
+                                </select>
+                            </div>
+                        </div>
+                       
+                        
+                    </Styl.Input>      
+                    <Styl.Opcao>
+                        {
+                            idP == undefined ? null :
+                            <button type='button' onClick={() => excluir()}>Excluir</button>
+                        }
+                    </Styl.Opcao>
                     <Styl.Salvar>   
-                        { idC == undefined ?
+                        { idP == undefined ?
                             <button type='button' onClick={() => salvar()}>Salvar</button> 
-                            ://Mandei no grupo o disc
+                            :
                             <button type='button' onClick={() => atualizar()}>Atualizar</button>
                         }
                     </Styl.Salvar>

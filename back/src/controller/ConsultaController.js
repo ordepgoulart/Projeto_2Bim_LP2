@@ -33,7 +33,7 @@ class ConsultaController{
         //propriedade new: true --> sempre retorna os dados da consulta
         //atualizados na resposta
         await ConsultaModel.findByIdAndUpdate(
-            {'_id': req.params.id},
+            req.params.id,
             req.body,
             {new: true}
             )
@@ -100,7 +100,6 @@ class ConsultaController{
             })
     }
 
-
     static async atrasadas(req, resp){
 
         await ConsultaModel.find(
@@ -116,13 +115,25 @@ class ConsultaController{
                 return resp.status(500).json(erro)
             })
     }
+    //mexendoaq
+    static async urgencia(req, resp){
+        await ConsultaModel.find(
+            {'tipo': 0}
+        )
+        .then(resposta=>{
+            return resp.status(200).json(resposta)
+        })
+        .catch(erro=>{
+            return resp.status(500).json(erro)
+        })
+    }
 
     static async consultaHoje(req, resp){
 
         await ConsultaModel.find(
             //operador gte --> maior igual que
             //operador lte --> menor igual que
-            {'data': {'$gte':startOfDay(hoje), '$lte': endOfDay(hoje)}})
+            {'data': {'$gte':startOfDay(hoje), '$lte': endOfDay(hoje)}, 'termino':{'$eq' : false}})
             .sort('data')
             .then(resposta =>{
                 return resp.status(200).json(resposta)
@@ -204,7 +215,7 @@ class ConsultaController{
         )
     }
 
-//perigosooo
+//perigoso
     static async consultaTipo(req, resp){
 
         await ConsultaModel.find()
@@ -225,6 +236,17 @@ class ConsultaController{
             })
             .catch(erro=>{
                 return resp.status(500).json(erro)
+        })
+    }
+
+    static async deletarPorPaciente(req, resp){ 
+        await ConsultaModel.deleteMany({'paciente' : req.params.idP})
+        .then(resposta =>{
+            return resp.status(200).json(resposta)
+        })
+        .catch(erro=>{
+           
+            return resp.status(500).json(erro)
         })
     }
 

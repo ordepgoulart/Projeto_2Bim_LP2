@@ -33,4 +33,6 @@ rota.get('/possuiretorno/:id', ConsultaController.possuiRetorno)
 
 rota.get('/marcarRetorno', ConsultaController.marcarRetorno)
 
+rota.delete('/deletarPorPaciente/:idP', ConsultaController.deletarPorPaciente)
+
 module.exports = rota

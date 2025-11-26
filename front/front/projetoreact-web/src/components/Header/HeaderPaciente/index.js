@@ -12,9 +12,9 @@ function Header({atrasadas}) {
             <img src={logo} alt="Logo"/>
         </Styl.Esq>
         <Styl.Dir>
-        <Link to="/">Início</Link>
+        <Link to="/pacientes">Início</Link>
         <span className="divisor"/>
-        <Link to="/paciente">Novo Paciente</Link>
+        <Link to="/pacienteForm">Novo Paciente</Link>
         <span className="divisor"/>
         <Link to="/">Consultas</Link>
         <span className="divisor"/>

@@ -9,6 +9,7 @@ rota.post('/', PacienteValido, PacienteController.criar)
 
 rota.put('/:id', PacienteValido, PacienteController.atualizar)
 
+
 rota.get('/cpf/:cpf', PacienteController.cpf)
 
 rota.put('/periodo', PacienteController.dataNasc)
@@ -27,5 +28,6 @@ rota.get('/masculino', PacienteController.consultarMasculino)
 
 rota.get('/feminino', PacienteController.consultarFeminino)
 
+rota.get('/todos', PacienteController.consultarTodos)
 
 module.exports = rota

@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     width: 100%;
     height: 70px;
     background-color: #C0C0C0;
@@ -76,7 +77,7 @@ export const Dir = styled.div`
     .divisor::after{
         content: "|";
         /*margin em cima 0 dos lados 10*/
-        magins: 0 10;
+        margin: 0 10;
         color: #FFF;
     }
 

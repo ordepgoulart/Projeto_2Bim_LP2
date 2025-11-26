@@ -3,8 +3,8 @@ import React, {useState, useEffect} from 'react';
 import Header from '../../components/Header/HeaderPaciente';
 import * as Styl from './styles'
 import Footer from '../../components/Footer';
-import FiltrarConsulta from '../../components/ConsultaFiltrar';
-import ConsultaCartao from '../../components/ConsultaCartao';
+import FiltrarPaciente from '../../components/PacienteFiltrar';
+import PacienteCartao from '../../components/PacienteCartao';
 import api from '../../services/api'
 import { Link } from 'react-router-dom';
 
@@ -30,16 +30,16 @@ async function verificaAtrasadas() {
 //na caixa de filtro, a função (atualizarFiltroAtivo) irá armazenar 
 //o estado atual do filtro
 
-const [filtroConsulta, atualizarFiltroAtivo] = useState('planosaude')
+const [filtroPaciente, atualizarFiltroAtivo] = useState('planosaude')
   
 
 //o useState irá guardar uma coleção de informações [] --> dados do banco
-const [consulta, atualizaConsulta] = useState([])
+const [paciente, atualizaPaciente] = useState([])
 
-async function carregarConsulta() {
-  await api.get(`/paciente/${filtroConsulta}`)
+async function carregarPaciente() {
+  await api.get(`/paciente/${filtroPaciente}`)
   .then(response=>{
-    atualizaConsulta(response.data)
+    atualizaPaciente(response.data)
     console.log(response.data)
   })
 }
@@ -50,44 +50,49 @@ function notificacao(){
 
 //useEffect -- > atualizar a página quando carregar o estado
 useEffect(()=>{
-  carregarConsulta()
+  carregarPaciente()
   verificaAtrasadas()
-}, [filtroConsulta])
+}, [filtroPaciente])
 
 
   return  (
     <Styl.Container>
       <Header atrasadas = {atrasadas}/>
         <Styl.AreaFiltro>
+          <button type='button' onClick={()=>atualizarFiltroAtivo("todos")}>
+              <FiltrarPaciente titulo="Todos" ativo={filtroPaciente=="todos"}/>
+          </button>
           <button type='button' onClick={()=>atualizarFiltroAtivo("planosaude")}>
-              <FiltrarConsulta titulo="Plano de Saúde" ativo={filtroConsulta=="planosaude"}/>
+              <FiltrarPaciente titulo="Plano de Saúde" ativo={filtroPaciente=="planosaude"}/>
           </button>
           <button type='button' onClick={()=>atualizarFiltroAtivo("particular")}>
-              <FiltrarConsulta titulo="Particular" ativo={filtroConsulta=="particular"}/>
+              <FiltrarPaciente titulo="Particular" ativo={filtroPaciente=="particular"}/>
           </button>
           <button type='button' onClick={()=>atualizarFiltroAtivo("masculino")}>
-              <FiltrarConsulta titulo="Masculino" ativo={filtroConsulta=="masculino"}/>
+              <FiltrarPaciente titulo="Masculino" ativo={filtroPaciente=="masculino"}/>
           </button>
           <button type='button' onClick={()=>atualizarFiltroAtivo("feminino")}>
-              <FiltrarConsulta titulo="Feminino" ativo={filtroConsulta=="feminino"}/>
+              <FiltrarPaciente titulo="Feminino" ativo={filtroPaciente=="feminino"}/>
           </button>
         </Styl.AreaFiltro>
 
         <Styl.Titulo>
-          <h3>Consultas</h3>
+          <h3>Pacientes</h3>
         </Styl.Titulo>
         <Styl.Cartao>
           {
-            consulta.map(c=>{
-              <Link to={`/formulario/${c._id}`}>
-                <ConsultaCartao
-                tipo={c.tipo}
-                paciente={c.paciente}
-                descricao={c.descricao}
-                data={c.data}
+            paciente.map(c=>(
+              <Link to={`/pacienteForm/${c._id}`}>
+                <PacienteCartao
+                nome={c.nome}
+                vinculo={c.vinculo}
+                dataNasc={c.dataNasc}
+                telefone={c.telefone}
+                cpf={c.cpf}
+                sexo={c.sexo}
                 />
               </Link>
-            })
+            ))
           }
         </Styl.Cartao>
 

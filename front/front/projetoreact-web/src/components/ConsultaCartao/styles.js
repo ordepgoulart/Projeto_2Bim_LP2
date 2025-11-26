@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     width: 250px;
     height: 250px;
     display: flex;
@@ -28,6 +29,10 @@ export const TopoCartao = styled.div`
     img{
         width:100px;
         height:100px;    
+    }
+    h1{
+        font-size: 1.5rem;
+        text-align: center;
     }
 `
 

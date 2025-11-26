@@ -29,15 +29,20 @@ function ConsultaDetalhes() {
                 setDescricao(resp.data.descricao)
                 setDay(format(new Date(resp.data.data), 'yyyy-MM-dd'))
                 setHour(format(new Date(resp.data.data), 'HH:mm'))
-                setPaciente(resp.data.paciente)
-                setConcluida(resp.data.concluida)
+                setConcluida(resp.data.termino)
                 setRetorno(resp.data.retorno)
+                const re = resp.data.paciente
+                if(re != undefined){
+                    await api.get(`/paciente/buscar/${re}`)
+                    .then(resp=>{
+                        const pe = resp.data.cpf
+                        setPaciente(pe)
+                    })
+                }              
+                
             })
-            await paciente != undefined &&
-            api.get(`/paciente/buscar/${paciente}`)
-            .then(resp=>{
-                setPaciente(resp.data.cpf)
-            })
+            
+            
         }
             
     }        
@@ -58,36 +63,35 @@ function ConsultaDetalhes() {
 
     async function salvar() {
         await api.get(`/paciente/cpf/${paciente}`)
-        .then(async resp=>{
-            console.log(resp.data)
-            
+        .then(async resp=>{         
             if(resp.data.length!=0){
-                setPaciente(resp.data[0]._id)
+                const idPaciente = resp.data[0]._id
+                let idRetorno = null;
+                setPaciente(idPaciente)
                 if(tipo == 2){
                     await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
                     .then(async resp=>{
                         if(resp.data.length>0){
-                            setRetorno(resp.data[0]._id);
+                            idRetorno = resp.data[0]._id
                         }
                     })
+                    .catch(e=>{window.alert(e.response.data.erro)})
                 }
-                else {
-                    setRetorno("");
-                }
+                setRetorno(idRetorno);
                 await api.post('/consulta',{
                     tipo,
-                    paciente,
+                    paciente: idPaciente,
                     descricao,
                     data: `${dia}T${hora}:00.000`,
                     concluida,
-                    retorno
+                    retorno : idRetorno
                 })
                 .then(()=>{
                     alert("Consulta cadastrada!")
                     window.location.href = '/'
                 })
-                .catch(()=>{
-                    alert("Erro ao cadastrar a consulta!")
+                .catch((e)=>{
+                    window.alert(e.response.data.erro)
                     setPaciente(resp.data[0].cpf)
                 })
             } else {
@@ -108,12 +112,23 @@ function ConsultaDetalhes() {
                     if(resp.data.length>0){
                         alert("Não é possível excluir uma consulta que possui retorno agendado!")
                     }
+                    else {
+                        await api.delete(`/consulta/deletar/${idC}`)
+                        .then(async()=>{
+                            alert("Consulta excluída com sucesso!")
+                            //window.location.href = '/'
+                        })
+                        .catch(()=>{
+                            alert("Erro ao excluir a consulta!")
+                        })
+                    }
                 })
             }
             else {
-                await api.get(`/consulta/deletar/${idC}`)
+                await api.delete(`/consulta/deletar/${idC}`)
                 .then(async()=>{
                     alert("Consulta excluída com sucesso!")
+                    //window.location.href = '/'
                 })
                 .catch(()=>{
                     alert("Erro ao excluir a consulta!")
@@ -135,30 +150,34 @@ function ConsultaDetalhes() {
             await api.get(`/paciente/cpf/${paciente}`)
             .then(async resp=>{
                 if(resp.data.length>0){
-                    setPaciente(resp.data[0]._id)
+                    const idPaciente = resp.data[0]._id
+                    let idRetorno = null;
                     if(tipo == 2){
-                    await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
-                    .then(async resp=>{
-                        if(resp.data.length>0){
-                            setRetorno(resp.data[0]._id);
-                        }
-                    })
+                        await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
+                        .then(async resp=>{
+                            if(resp.data.length>0){
+                                idRetorno = resp.data[0]._id
+                            }
+                        })
                     }
-                    else {
-                        setRetorno("");
-                    }
+                    setRetorno(idRetorno);
                     await api.put(`/consulta/${idC}`,{
                         tipo,
-                        paciente,
+                        paciente : idPaciente,
                         descricao,
                         data: `${dia}T${hora}:00.000`,
-                        concluida,
-                        retorno
+                        termino:`${concluida}`,
+                        retorno : idRetorno
                     })
                     .then(()=>{
                         alert("Consulta atualizada!")
                         window.location.href = '/'
                     })
+                    .catch((e)=>{
+                        console.log(e.response.data.erro)
+                        setPaciente(resp.data[0].cpf)
+                    })
+                    
                 } else {
                     alert("Paciente não cadastrado!")
                 }
@@ -186,7 +205,7 @@ function ConsultaDetalhes() {
                     </Styl.TipoIcones>
 
                     <Styl.Input>
-                        <span>CPF doPaciente</span>    
+                        <span>CPF do Paciente</span>    
                         <input type='text' placeholder='CPF do paciente' onChange={e=>setPaciente(e.target.value)} value={paciente}/>
                     </Styl.Input>
                     
@@ -207,7 +226,7 @@ function ConsultaDetalhes() {
 
                     <Styl.Opcao>
                         <div>
-                            <input type='checkbox' onChange={e=>setConcluida(e.target.value)} value={!concluida}/>
+                            <input type='checkbox' onChange={e=>setConcluida(e.target.checked)} checked={concluida}/>
                             <span>Concluída</span>
                         </div>
                         {

@@ -163,6 +163,17 @@ class PacienteController{
                 return resp.status(500).json(erro)
             })
     }
+
+    static async consultarTodos(req, resp){
+        await PacienteModel.find()
+            .sort('cpf')
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+        })
+    }
     
 }
 //expostar a minha classe

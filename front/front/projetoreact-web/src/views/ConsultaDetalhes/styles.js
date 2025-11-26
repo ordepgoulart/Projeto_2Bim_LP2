@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 
 export const Container = styled.div `
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -44,8 +45,9 @@ export const Input = styled.div `
     flex-direction: column;
     margin: 20px 0;
     span{
-        color: #707070;
+        color: #000;
         margin-bottom: 5px;    
+        font-weight:bold;   
     }
     input{
         font-size: 16px;
@@ -60,8 +62,9 @@ export const TextArea = styled.div `
     flex-direction: column;
     margin: 20px 0;
     span{
-        color: #707070;
+        color: #000;
         margin-bottom: 5px;    
+        font-weight:bold;   
     }
     textarea{
         font-size: 16px;

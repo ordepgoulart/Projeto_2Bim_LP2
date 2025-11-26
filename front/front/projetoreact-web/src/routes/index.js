@@ -12,7 +12,8 @@ function Rotas(){
                 <Route path="/" element={<Home/>}></Route>
                 <Route path="/formulario" element={<ConsultaDetalhes/>}></Route>
                 <Route path="/pacientes" element={<HomePaciente/>}></Route>
-                <Route path="/paciente" element={<PacienteDetalhes/>}></Route>
+                <Route path="/pacienteForm" element={<PacienteDetalhes/>}></Route>
+                <Route path="/pacienteForm/:idP" element={<PacienteDetalhes/>}></Route>
                 <Route path="/formulario/:idC" element={<ConsultaDetalhes/>}></Route>
             </Routes>
         </Router>
