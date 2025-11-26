@@ -228,8 +228,8 @@ class ConsultaController{
     }
 
     static async verificarCirugia(req, resp){
-
-        await ConsultaModel.find({'tipo': 4, 'termino' : false, 'data' : { '$gte': subHours(hoje,5), '$lte': hoje 
+        const agora = new Date()
+        await ConsultaModel.find({'tipo': 4, 'termino' : false, 'data' : { '$gte': subHours(agora,5), '$lte': agora 
         }})
             .sort({'data' : -1})
             .then(resposta =>{
