@@ -2,8 +2,8 @@ import styled from 'styled-components'
 
 export const Container = styled.div`
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 300px;
-    height: 90px;
+    width: 150px;
+    height: 60px;
     background: ${prop=> prop.ativo=="true"  ? '#22B24C' : '#C0C0C0'}; 
     display: flex;
     border-radius: 5px;

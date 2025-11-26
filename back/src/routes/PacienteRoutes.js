@@ -9,7 +9,6 @@ rota.post('/', PacienteValido, PacienteController.criar)
 
 rota.put('/:id', PacienteValido, PacienteController.atualizar)
 
-
 rota.get('/cpf/:cpf', PacienteController.cpf)
 
 rota.put('/periodo', PacienteController.dataNasc)

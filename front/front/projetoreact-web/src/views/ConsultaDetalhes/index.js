@@ -19,7 +19,9 @@ function ConsultaDetalhes() {
     const [dia, setDay] = useState()
     const [hora, setHour] = useState()
     const [tipoVindo, setTipoVindo] = useState()
+    const [status,setStatus] = useState()
     const {idC} = useParams()
+
     async function carregarConsulta() {
         if(idC != undefined){
             await api.get(`/consulta/buscar/${idC}`)
@@ -30,6 +32,7 @@ function ConsultaDetalhes() {
                 setDay(format(new Date(resp.data.data), 'yyyy-MM-dd'))
                 setHour(format(new Date(resp.data.data), 'HH:mm'))
                 setConcluida(resp.data.termino)
+                setStatus(resp.data.termino)
                 setRetorno(resp.data.retorno)
                 const re = resp.data.paciente
                 if(re != undefined){
@@ -54,11 +57,39 @@ function ConsultaDetalhes() {
         )
     }
 
+    async function verificarCirugia() {
+        let re;
+        await api.get('/consulta/verificaCirugia')
+        .then(resp=>{
+            if(resp.data.length>0){
+                re = resp.data[0]._id             
+            }
+            else re = null;
+        })
+        return re;
+    }
+
+    async function initialize() {
+        const cirurgia = await verificarCirugia();
+        if(cirurgia != null){
+            if(idC != undefined && idC == cirurgia){
+                carregarConsulta();
+                verificaAtrasadas()
+            }
+            else{
+                alert("Uma cirugia está em andamento!")
+                window.location.href = '/'
+            }   
+        }
+        else {
+            if(idC != undefined)
+                carregarConsulta();
+            verificaAtrasadas()
+        }
+    }
+
     useEffect(()=>{
-        if(idC != undefined)
-            carregarConsulta();
-        console.log(idC)
-        verificaAtrasadas()
+        initialize()
     }, [])
 
     async function salvar() {
@@ -69,31 +100,54 @@ function ConsultaDetalhes() {
                 let idRetorno = null;
                 setPaciente(idPaciente)
                 if(tipo == 2){
-                    await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
-                    .then(async resp=>{
-                        if(resp.data.length>0){
-                            idRetorno = resp.data[0]._id
+                    await api.get(`/consulta/marcarRetorno/${dia}T${hora}:00.000/${idPaciente}`)
+                    .then(async resp2=>{
+                        if(resp2.data.length>0){
+                            idRetorno = resp2.data[0]._id
+                            setRetorno(idRetorno);
+                            await api.post('/consulta',{
+                                tipo,
+                                paciente: idPaciente,
+                                descricao,
+                                data: `${dia}T${hora}:00.000`,
+                                termino : concluida,
+                                retorno : idRetorno
+                            })
+                            .then(()=>{
+                                alert("Consulta cadastrada!")
+                                window.location.href = '/'
+                            })
+                            .catch((e)=>{
+                                setPaciente(resp.data[0].cpf)
+                                alert(e.response.data.erro)
+                                
+                            })
+                        }
+                        else{
+                            setPaciente(resp.data[0].cpf)
+                            alert("Não há consultas concluídas para se marcar um retorno!")
                         }
                     })
                     .catch(e=>{window.alert(e.response.data.erro)})
-                }
-                setRetorno(idRetorno);
-                await api.post('/consulta',{
-                    tipo,
-                    paciente: idPaciente,
-                    descricao,
-                    data: `${dia}T${hora}:00.000`,
-                    concluida,
-                    retorno : idRetorno
-                })
-                .then(()=>{
-                    alert("Consulta cadastrada!")
-                    window.location.href = '/'
-                })
-                .catch((e)=>{
-                    window.alert(e.response.data.erro)
-                    setPaciente(resp.data[0].cpf)
-                })
+                }else {
+                    setRetorno(null);
+                    await api.post('/consulta',{
+                        tipo,
+                        paciente: idPaciente,
+                        descricao,
+                        data: `${dia}T${hora}:00.000`,
+                        termino : concluida,
+                        retorno : idRetorno
+                    })
+                    .then(()=>{
+                        alert("Consulta cadastrada!")
+                        window.location.href = '/'
+                    })
+                    .catch((e)=>{
+                        window.alert(e.response.data.erro)
+                        setPaciente(resp.data[0].cpf)
+                    })
+                }  
             } else {
                 alert("Paciente não cadastrado!")
             }
@@ -116,7 +170,7 @@ function ConsultaDetalhes() {
                         await api.delete(`/consulta/deletar/${idC}`)
                         .then(async()=>{
                             alert("Consulta excluída com sucesso!")
-                            //window.location.href = '/'
+                            window.location.href = '/'
                         })
                         .catch(()=>{
                             alert("Erro ao excluir a consulta!")
@@ -128,7 +182,7 @@ function ConsultaDetalhes() {
                 await api.delete(`/consulta/deletar/${idC}`)
                 .then(async()=>{
                     alert("Consulta excluída com sucesso!")
-                    //window.location.href = '/'
+                    window.location.href = '/'
                 })
                 .catch(()=>{
                     alert("Erro ao excluir a consulta!")
@@ -143,48 +197,66 @@ function ConsultaDetalhes() {
 
 
     async function atualizar() {
-        if(tipoVindo == 2 && tipo !=2){
-           alert("Não é possível alterar o tipo de uma consulta de retorno para outro tipo!");
-        }
-        else{
-            await api.get(`/paciente/cpf/${paciente}`)
-            .then(async resp=>{
-                if(resp.data.length>0){
-                    const idPaciente = resp.data[0]._id
-                    let idRetorno = null;
-                    if(tipo == 2){
-                        await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
-                        .then(async resp=>{
-                            if(resp.data.length>0){
-                                idRetorno = resp.data[0]._id
-                            }
-                        })
-                    }
-                    setRetorno(idRetorno);
-                    await api.put(`/consulta/${idC}`,{
-                        tipo,
-                        paciente : idPaciente,
-                        descricao,
-                        data: `${dia}T${hora}:00.000`,
-                        termino:`${concluida}`,
-                        retorno : idRetorno
-                    })
+        if(!status){
+            let confirmar;
+            if(concluida){
+                confirmar = window.confirm("Deseja concluir esta consulta? (UMA VEZ CONCLUÍDA ELA NÃO PODERÁ SER ALTERADA E SOMENTE SERÁ ALTERADA A DESCRIÇÃO CASO TENHA SIDO MODIFICADA)")
+                if(confirmar){
+                    await api.put(`/consulta/concluida/${idC}/${concluida}`,{descricao})
                     .then(()=>{
-                        alert("Consulta atualizada!")
+                        alert("Consulta concluída!")
                         window.location.href = '/'
                     })
-                    .catch((e)=>{
-                        console.log(e.response.data.erro)
-                        setPaciente(resp.data[0].cpf)
-                    })
-                    
-                } else {
-                    alert("Paciente não cadastrado!")
                 }
-            })
+            }
+            else{
+                if(tipoVindo == 2 && tipo !=2){
+                    alert("Não é possível alterar o tipo de uma consulta de retorno para outro tipo!");
+                }
+                else{
+                    await api.get(`/paciente/cpf/${paciente}`)
+                    .then(async resp=>{
+                        if(resp.data.length>0){
+                            const idPaciente = resp.data[0]._id
+                            let idRetorno = null;
+                            if(tipo == 2){
+                                await api.get(`/consulta/marcarRetorno/${dia}/${paciente}`)
+                                .then(async resp=>{
+                                    if(resp.data.length>0){
+                                        idRetorno = resp.data[0]._id
+                                    }
+                                })
+                            }
+                            setRetorno(idRetorno);
+                            await api.put(`/consulta/${idC}`,{
+                                tipo,
+                                paciente : idPaciente,
+                                descricao,
+                                data: `${dia}T${hora}:00.000`,
+                                termino:`${concluida}`,
+                                retorno : idRetorno
+                            })
+                            .then(()=>{
+                                alert("Consulta atualizada!")
+                                window.location.href = '/'
+                            })
+                            .catch((e)=>{
+                                console.log(e.response.data.erro)
+                                setPaciente(resp.data[0].cpf)
+                            })
+                            
+                        } else {
+                            alert("Paciente não cadastrado!")
+                        }
+                    })
+                }
+            }
+        
+        }
+        else{
+            alert("Uma consulta finalizada não pode ser alterada!")
         }
         
-       
     }
 
     return  (

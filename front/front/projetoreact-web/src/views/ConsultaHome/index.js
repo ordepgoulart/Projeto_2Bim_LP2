@@ -74,6 +74,18 @@ useEffect(()=>{
           <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
               <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
           </button>
+          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
+              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
+          </button>
+          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
+              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
+          </button>
+          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
+              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
+          </button>
+          <button type='button' onClick={()=>atualizarFiltroAtivo("ano")}>
+              <FiltrarConsulta titulo="Ano" ativo={filtroConsulta=="ano"}/>
+          </button>
         </Styl.AreaFiltro>
 
         <Styl.Titulo>

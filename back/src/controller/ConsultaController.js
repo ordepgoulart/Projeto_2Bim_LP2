@@ -4,7 +4,7 @@ const ConsultaModel = require('../model/ConsultaModel')
 const hoje = new Date()
 
 //recuperar começo e fim do dia
-const  {startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, endOfYear, startOfYear, subDays} = require('date-fns')
+const  {startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, endOfYear, startOfYear, subDays, subHours} = require('date-fns')
 
 class ConsultaController{
     //função para criar a consulta
@@ -89,7 +89,7 @@ class ConsultaController{
 
         await ConsultaModel.findByIdAndUpdate(
             {'_id': req.params.id},
-            {'termino': req.params.termino},
+            {'termino': req.params.termino, 'descricao' : req.body.descricao},
             {new: true}
             )
             .then(resposta =>{
@@ -134,7 +134,7 @@ class ConsultaController{
             //operador gte --> maior igual que
             //operador lte --> menor igual que
             {'data': {'$gte':startOfDay(hoje), '$lte': endOfDay(hoje)}, 'termino':{'$eq' : false}})
-            .sort('data')
+            .sort({'tipo' :-1,'data' : 1})
             .then(resposta =>{
                 return resp.status(200).json(resposta)
             })
@@ -205,7 +205,7 @@ class ConsultaController{
     static async consultaTodas(req, resp){
 
         await ConsultaModel.find()
-            .sort('data')
+            .sort({'tipo' :-1,'data' : 1})
             .then(resposta =>{
                 return resp.status(200).json(resposta)
             })
@@ -228,8 +228,21 @@ class ConsultaController{
         })
     }
 
+    static async verificarCirugia(req, resp){
+
+        await ConsultaModel.find({'tipo': 4, 'termino' : false, 'data' : { '$gte': subHours(hoje,5), '$lte': hoje 
+        }})
+            .sort({'data' : -1})
+            .then(resposta =>{
+                return resp.status(200).json(resposta)
+            })
+            .catch(erro=>{
+                return resp.status(500).json(erro)
+        })
+    }
+
     static async marcarRetorno(req, resp){
-        await ConsultaModel.find({'date':{'$gte': subDays(req.params.data,30), '$lt': req.params.data}, 'concluida': true, 'paciente': req.params.paciente})
+        await ConsultaModel.find({'date':{'$gte': subDays(req.params.data,30), '$lt': req.params.data}, 'termino': true, 'paciente': req.params.paciente})
             .sort('data')
             .then(resposta =>{
                 return resp.status(200).json(resposta)
